@@ -69,7 +69,7 @@ def update_user_details(request):
         user.name = name
         user.Gender = gender
         user.save()
-        return Response({"message": "User details updated successfully."})
+        return Response({"message": "User details updated successfully.","status": "success"})
     except User_signup_details.DoesNotExist:
         return Response({"message": "User does not exist."}, status=404)
 
@@ -100,7 +100,7 @@ def send_email_update_otp(request):
         fail_silently=False,
     )
 
-    return Response({"message": "OTP sent to new email and valid for 10 minutes."})
+    return Response({"message": "OTP sent to new email and valid for 10 minutes.","status": "success"})
 
 
 @api_view(['POST'])
@@ -127,11 +127,36 @@ def update_user_email(request):
         user.email = new_email
         user.save()
         cache.delete(f"email_otp_{new_email}")  # remove used OTP
-        return Response({"message": "User email updated successfully."})
+        return Response({"message": "User email updated successfully.","status": "success"})
     except User_signup_details.DoesNotExist:
         return Response({"message": "User does not exist."}, status=404)
 
+@api_view(['POST'])
+def update_user_phone(request):
+    email = request.data.get('email')
+    phone_number = request.data.get('phone_number')
+    
+    try:
+        user = User_signup_details.objects.get(email=email)
+        user.phone_number = phone_number
+        user.save()
+        return Response({"message": "User phone number updated successfully.",
+                         "status": "success"})
+    except User_signup_details.DoesNotExist:
+        return Response({"message": "User does not exist."}, status=404)
 
+@api_view(['POST'])
+def update_user_password(request):
+    email = request.data.get('email')
+    new_password = request.data.get('new_password')
+    
+    try:
+        user = User_signup_details.objects.get(email=email)
+        user.password = make_password(new_password)
+        user.save()
+        return Response({"message": "User password updated successfully.","status": "success"})
+    except User_signup_details.DoesNotExist:
+        return Response({"message": "User does not exist.","status": "error"}, status=404)
 
 @api_view(['POST'])
 def seller_signup(request):

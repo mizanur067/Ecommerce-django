@@ -32,6 +32,8 @@ urlpatterns = [
     path('update_user_details/', views.update_user_details, name='update_user_details'),
     path('send_email_update_otp/', views.send_email_update_otp, name='send_email_update_otp'),
     path('update_user_email/', views.update_user_email, name='update_user_email'),
+    path('update_user_phone/', views.update_user_phone, name='update_user_phone'),  
+    path('update_user_password/',views.update_user_password,name='update_user_password'),
 
 ]
 if settings.DEBUG:
