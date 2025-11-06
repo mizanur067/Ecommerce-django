@@ -1,5 +1,5 @@
 from django.db import models
-
+from datetime import datetime
 # Create your models here.
 class User_signup_details(models.Model):
     name = models.CharField(max_length=100)
@@ -57,5 +57,18 @@ class User_cart(models.Model):
     Product_id= models.CharField(max_length=100, blank=False)
     
 
+class Orders(models.Model):
+    product_ids=models.JSONField(default=list)
+    user_email=models.EmailField(max_length=100,blank=False)
+    quantity=models.IntegerField(blank=False)
+    total_price=models.FloatField(blank=False)
+    address=models.TextField(blank=False)
+
+    transaction_id=models.CharField(max_length=100,blank=True,null=True,default='COD')
+    order_status=models.CharField(max_length=50,default='Pending')
+    payment_status=models.CharField(max_length=50,default='Pending')
+    payment_method=models.CharField(max_length=50,default='COD')
+    order_date=models.DateTimeField(default=datetime.now())
+    
 
 

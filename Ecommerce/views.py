@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from rest_framework.decorators import api_view,parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from .Serializers import ProductSerializer
-from .models import User_signup_details, product_details, seller_sign_up_details,User_cart,user_address
+from .models import User_signup_details, product_details, seller_sign_up_details,User_cart,user_address ,Orders
 from rest_framework import status
 from django.contrib.auth.hashers import check_password,make_password
 from .Serializers import UserCartSerializer
@@ -54,9 +54,9 @@ def get_user_details(request):
             "phone_number": user.phone_number,
             "Gender": user.Gender
         }
-        return Response({"user_data": user_data})
+        return Response({"user_data": user_data,'status': 'success'})
     except User_signup_details.DoesNotExist:
-        return Response({"message": "User does not exist."}, status=404)
+        return Response({"message": "User does not exist.",'status': 'error'}, status=404)
 #update name and gender
 @api_view(['POST'])
 def update_user_details(request):
@@ -154,9 +154,9 @@ def update_user_password(request):
         user = User_signup_details.objects.get(email=email)
         user.password = make_password(new_password)
         user.save()
-        return Response({"message": "User password updated successfully.","status": "success"})
+        return Response({"message": "Your password updated successfully.","status": "success"})
     except User_signup_details.DoesNotExist:
-        return Response({"message": "User does not exist.","status": "error"}, status=404)
+        return Response({"message": "Your account does not exist.","status": "error"}, status=404)
 
 @api_view(['POST'])
 def seller_signup(request):
@@ -358,5 +358,50 @@ def add_user_address(request):
         address.save()
 
         return Response({"message": "Address saved successfully."})
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+def get_user_address(request):
+    user_email=request.data.get('user_email')
+    try:
+        addresses= user_address.objects.filter(user_email=user_email)
+        address_list=[]
+        for addr in addresses:
+            address_data={
+                "name":addr.name,
+                "phone_number":addr.phone_number,
+                "address_line1":addr.address_line1,
+                "address_line2":addr.address_line2,
+                "city":addr.city,
+                "state":addr.state,
+                "postal_code":addr.postal_code,
+                "country":addr.country
+            }
+            address_list.append(address_data)
+        return Response({"addresses":address_list,"status": "success"}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+#Orders related views can be added here
+@api_view(['POST'])
+def create_user_orders(request):
+    user_email = request.data.get('user_email')
+    product_ids = request.data.get('product_ids', [])  # Expecting a list of product IDs
+    quantity = request.data.get('quantity')
+    total_price = request.data.get('total_price')
+    address = request.data.get('address')
+
+    try:
+        order = Orders(
+            user_email=user_email,
+            product_ids=product_ids,
+            quantity=quantity,
+            total_price=total_price,
+            address=address
+        )
+        order.save()
+        return Response({"message": "Order created successfully.", "order_id": order.id}, status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
